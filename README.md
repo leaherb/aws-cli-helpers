@@ -3,7 +3,7 @@
 [![Contribution Open](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/ows-ali/Hacktoberfest/blob/master/CONTRIBUTING.md)
 [![first-timers-only](https://img.shields.io/badge/first--timers--only-friendly-blue.svg?style=flat-square)](https://www.firsttimersonly.com/)
 
-The purpose of this repository is to build-up a store of scripts and templates to help launch, report and manage CloudFormation resources. Also, curate a list of helper **Resources** in this README.
+The purpose of this repository is to build-up a store of scripts and templates to help launch, report and manage CloudFormation resources. Also, curate a list of helper **References** in this README.
 
 # Resources
 
