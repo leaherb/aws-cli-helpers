@@ -7,7 +7,7 @@ The purpose of this repository is to build-up a store of scripts and templates t
 
 ## How to Contribute
 
-I strongly encourage you to submit pull requests to make improvements to this project.
+I encourage you to submit pull requests to make improvements to this project.
 
 Please use the [Udacity Git Commit Message Style Guide](https://udacity.github.io/git-styleguide/), and follow the "fork-and-pull" Git workflow:
 
