@@ -1,3 +1,4 @@
+# List exports (outputs)
 aws cloudformation list-exports --query 'Exports[].[Name,Value]' --output table
 
 # another option:
