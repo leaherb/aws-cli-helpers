@@ -1,0 +1,113 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Create EC2 instance with full access to S3 Bucket(s)."
+
+Parameters:
+
+    KeyName:
+        Description: Keyname to use for EC2 instance(s)
+        Type: AWS::EC2::KeyPair::KeyName
+
+    SSHLocation:
+        Description: Who can SSH to EC2 instances
+        Type: String
+        Default: 0.0.0.0/0   # everyone
+
+
+Resources:
+
+    # Define which ports should be opened on our EC2 instance
+    OPSSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupName: !Sub "${AWS::StackName}-SecurityGroup"
+            GroupDescription: "Enable HTTP access via port 80, and SSH port 22"
+            SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 80
+                ToPort: 80
+                CidrIp: 0.0.0.0/0
+              - IpProtocol: tcp
+                FromPort: 22
+                ToPort: 22
+                CidrIp: !Ref SSHLocation
+
+    # Create a role for EC2 instances, to which we can attach policies
+    OPSRole:
+        Type: AWS::IAM::Role
+        Properties:
+            Description: "An EC2 instance role"
+            AssumeRolePolicyDocument:
+                Version: 2012-10-17
+                Statement:
+                - Effect: Allow     
+                  Principal:
+                    Service: ec2.amazonaws.com
+                  Action: sts:AssumeRole
+
+    # Give full S3 access to OPSRole
+    OPSRolePolicies:
+        Type: AWS::IAM::Policy
+        Properties:
+            PolicyName: OPSRolePolicy
+            PolicyDocument:
+                Version: 2012-10-17
+                Statement:
+                - Effect: Allow
+                  Action: 's3:*'   # AmazonS3FullAccess
+                  Resource: '*'
+            Roles: [ !Ref OPSRole ]
+
+    # Create an Instance Profile and attach the OPSRole
+    OPSInstanceProfile:
+        Type: AWS::IAM::InstanceProfile
+        Properties:
+            InstanceProfileName: "OPSInstanceProfile"
+            Roles: [ !Ref OPSRole ]
+
+    # Create EC2 with our new Role (via Instance Profile) and Security Group
+    OPSInstance:
+        Type: AWS::EC2::Instance
+        Properties:
+            ImageId: ami-a0cfeed8
+            InstanceType: t2.micro
+            SecurityGroups: [!Ref OPSSecurityGroup]
+            KeyName: !Ref KeyName
+            IamInstanceProfile: !Ref OPSInstanceProfile
+            Tags:
+              - Key: Name
+                Value: !Sub "${AWS::StackName}-Instance"
+
+    # Create S3 bucket, closed to the public
+    S3Bucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: !Sub "${AWS::StackName}-bucket-${AWS::AccountId}"
+            PublicAccessBlockConfiguration:  # Block public access
+                BlockPublicAcls: true
+                IgnorePublicAcls: true
+                BlockPublicPolicy: true
+                RestrictPublicBuckets: true         
+
+
+Outputs:
+
+  ConnectString:
+    Description: SSH Connect
+    Value:
+      Fn::Join:
+      - ''
+      - - 'ssh -i "'
+        - !Ref KeyName
+        - '.pem" ec2-user@'
+        - Fn::GetAtt:
+          - OPSInstance
+          - PublicDnsName
+
+  BucketURL:
+    Description: S3 Bucket name
+    Value: 
+      Fn::Join: 
+      - ''
+      - - "s3://"
+        - !Sub "${AWS::StackName}-bucket-${AWS::AccountId}"

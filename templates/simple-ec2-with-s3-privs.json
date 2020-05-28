@@ -1,0 +1,10 @@
+[
+	{
+		"ParameterKey": "SSHLocation",
+		"ParameterValue": "TEMPMYIP"
+	},
+	{
+		"ParameterKey": "KeyName",
+		"ParameterValue": "default"
+	}
+]
